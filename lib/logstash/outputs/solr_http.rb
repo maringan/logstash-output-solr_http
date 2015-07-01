@@ -63,11 +63,9 @@ class LogStash::Outputs::SolrHTTP < LogStash::Outputs::Base
     events.each do |event|
         document = event.to_hash()
         document["@timestamp"] = document["@timestamp"].iso8601 if document["@timestamp"] #make the timestamp ISO
-        if @document_id.nil?
-          document ["id"] = UUIDTools::UUID.random_create    #add a unique ID
-        else
-          document ["id"] = event.sprintf(@document_id)      #or use the one provided
-        end
+
+        document["id"] = get_document_id(event) unless @disable_document_id
+
         documents.push(document)
     end
 
@@ -75,4 +73,9 @@ class LogStash::Outputs::SolrHTTP < LogStash::Outputs::Base
     rescue Exception => e
       @logger.warn("An error occurred while indexing: #{e.message}")
   end #def flush
+
+  public
+  def get_document_id(event)
+    @document_id.nil? ? UUIDTools::UUID.random_create : event.sprintf(@document_id)
+  end #def get_document_by_id
 end #class LogStash::Outputs::SolrHTTP
