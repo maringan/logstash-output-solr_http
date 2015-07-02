@@ -39,6 +39,8 @@ class LogStash::Outputs::SolrHTTP < LogStash::Outputs::Base
   # '%{foo}' so you can assign your own IDs
   config :document_id, :validate => :string, :default => nil
 
+  config :disable_document_id, :validate => :boolean, :default => false
+
   public
   def register
     require "rsolr"
@@ -59,7 +61,6 @@ class LogStash::Outputs::SolrHTTP < LogStash::Outputs::Base
   public
   def flush(events, teardown=false)
     documents = []  #this is the array of hashes that we push to Solr as documents
-
     events.each do |event|
         document = event.to_hash()
         document["@timestamp"] = document["@timestamp"].iso8601 if document["@timestamp"] #make the timestamp ISO
